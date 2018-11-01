@@ -38,7 +38,7 @@ func main() {
 				callback(ii)
 			}
 
-			w.BlockAddJob(single.MakeCommonAction(callback, i))
+			w.BlockJob(single.MakeCommonAction(callback, i))
 		}
 	}
 

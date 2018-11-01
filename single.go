@@ -15,20 +15,32 @@ import (
 )
 
 type Worker struct {
-	jobs []*Action
+	jobs  []*Action
 	mutex sync.Mutex
-	stop bool
+	stop  bool
 
 	// 测试用的
 	rid int
 	wid int
 }
-func (self *Worker) AddJob(callback IAction) {
+
+func (self *Worker) Run() {
+	go self.loop()
+}
+
+// 一个是阻塞式的
+func (self *Worker) BlockJob(callback IAction) {
+	job := self.addJob(callback)
+	<-job.done
+}
+
+// 一个是非阻塞式的
+func (self *Worker) NonblockJob(callback IAction) {
 	self.addJob(callback)
 }
 func (self *Worker) addJob(callback IAction) *Action {
 
-	job := &Action{callback:callback, done:make(chan bool)}
+	job := &Action{callback: callback, done: make(chan bool)}
 
 	self.mutex.Lock()
 	self.jobs = append(self.jobs, job)
@@ -37,13 +49,6 @@ func (self *Worker) addJob(callback IAction) *Action {
 	self.mutex.Unlock()
 
 	return job
-}
-func (self *Worker) BlockAddJob(callback IAction) {
-	job := self.addJob(callback)
-	<-job.done
-}
-func (self *Worker) Run() {
-	go self.loop()
 }
 func (self *Worker) loop() {
 	for !self.stop {
