@@ -10,11 +10,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"time"
 	"single"
+	"time"
 )
 
-func main() {
+func test1() {
 
 	fmt.Println("test!")
 
@@ -75,3 +75,11 @@ func main() {
 	ioutil.WriteFile("1.log", []byte(logs), os.ModePerm)
 	fmt.Println("done.")
 }
+
+func main() {
+
+	// test1()
+	test2()
+}
+
+
