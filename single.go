@@ -15,6 +15,8 @@ import (
 )
 
 type Worker struct {
+	RestTime int	// 没有任务时，sleep的时间，单位是毫秒
+
 	jobs  []*Action
 	mutex sync.Mutex
 	stop  bool
@@ -22,6 +24,12 @@ type Worker struct {
 	// 测试用的
 	rid int
 	wid int
+}
+
+func NewWorker() *Worker{
+	ret := &Worker{}
+	ret.RestTime = 30
+	return ret
 }
 
 func (self *Worker) Run() {
@@ -64,7 +72,7 @@ func (self *Worker) loop() {
 		self.mutex.Unlock()
 
 		if job == nil {
-			time.Sleep(time.Millisecond * 30)
+			time.Sleep(time.Millisecond * time.Duration(self.RestTime))
 			continue
 		}
 
