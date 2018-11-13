@@ -11,24 +11,25 @@ package single
 import (
 	"fmt"
 	"sync"
-	"time"
 )
 
 type Worker struct {
-	RestTime int	// 没有任务时，sleep的时间，单位是毫秒
+	RestTime int // 单位是毫秒
 
-	jobs  []*Action
-	mutex sync.Mutex
-	stop  bool
+	jobs    []*Action
+	mutex   sync.Mutex
+	stop    bool
+	counter chan struct{}
 
 	// 测试用的
 	rid int
 	wid int
 }
 
-func NewWorker() *Worker{
+func NewWorker() *Worker {
 	ret := &Worker{}
 	ret.RestTime = 30
+	ret.counter = make(chan struct{}, 100)
 	return ret
 }
 
@@ -56,10 +57,18 @@ func (self *Worker) addJob(callback IAction) *Action {
 	job.id = self.rid
 	self.mutex.Unlock()
 
+	go func() {
+		self.counter <- struct{}{}
+	}()
+
 	return job
 }
 func (self *Worker) loop() {
 	for !self.stop {
+
+		// 获取一个数据
+		<-self.counter
+
 		var job *Action
 		wid := 0
 		self.mutex.Lock()
@@ -72,7 +81,7 @@ func (self *Worker) loop() {
 		self.mutex.Unlock()
 
 		if job == nil {
-			time.Sleep(time.Millisecond * time.Duration(self.RestTime))
+			//time.Sleep(time.Millisecond * time.Duration(self.RestTime))
 			continue
 		}
 
